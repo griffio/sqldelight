@@ -258,6 +258,14 @@ class JdbcPreparedStatement(
     }
   }
 
+  fun bindOther(index: Int, obj: Any?) {
+    if (obj == null) {
+      preparedStatement.setNull(index + 1, Types.OTHER)
+    } else {
+      preparedStatement.setObject(index + 1, obj, Types.OTHER)
+    }
+  }
+
   override fun bindString(index: Int, string: String?) {
     if (string == null) {
       preparedStatement.setNull(index + 1, Types.VARCHAR)
