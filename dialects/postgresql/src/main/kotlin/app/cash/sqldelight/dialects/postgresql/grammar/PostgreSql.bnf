@@ -20,6 +20,7 @@
     "static com.alecstrong.sql.psi.core.psi.SqlTypes.COMMA"
     "static com.alecstrong.sql.psi.core.psi.SqlTypes.CONFLICT"
     "static com.alecstrong.sql.psi.core.psi.SqlTypes.CONSTRAINT"
+    "static com.alecstrong.sql.psi.core.psi.SqlTypes.CREATE"
     "static com.alecstrong.sql.psi.core.psi.SqlTypes.CURRENT_DATE"
     "static com.alecstrong.sql.psi.core.psi.SqlTypes.CURRENT_TIME"
     "static com.alecstrong.sql.psi.core.psi.SqlTypes.CURRENT_TIMESTAMP"
@@ -129,7 +130,8 @@ type_name ::= (
   date_data_type |
   boolean_data_type |
   json_data_type |
-  blob_data_type
+  blob_data_type |
+  custom_data_type
 ) [ '[]' ] {
   extends = "com.alecstrong.sql.psi.core.psi.impl.SqlTypeNameImpl"
   implements = "com.alecstrong.sql.psi.core.psi.SqlTypeName"
@@ -325,6 +327,8 @@ boolean_not_expression ::= NOT (boolean_literal | {column_name})
 
 boolean_literal ::= TRUE | FALSE
 
+custom_data_type ::= {identifier}
+
 json_expression ::= {column_name} ( jsona_binary_operator | jsonb_binary_operator ) <<expr '-1'>> {
   mixin = "app.cash.sqldelight.dialects.postgresql.grammar.mixins.JsonExpressionMixin"
   pin = 2
@@ -353,3 +357,11 @@ copy_option_escape ::= ESCAPE string_literal
 copy_option_force_not_null ::= 'FORCE_NOT_NULL' LP {column_name} ( COMMA {column_name}) * RP
 copy_option_force_null ::= 'FORCE_NULL' LP {column_name} ( COMMA {column_name}) * RP
 copy_option_encoding ::= 'ENCODING' string_literal
+
+create_type_stmt ::= create_type {
+  extends = "com.alecstrong.sql.psi.core.psi.impl.SqlCreateTypeStmtImpl"
+  implements = "com.alecstrong.sql.psi.core.psi.SqlCreateTypeStmt"
+  override = true
+}
+
+create_type ::= CREATE type_clause custom_data_type AS 'ENUM' LP string_literal (COMMA string_literal) * RP
