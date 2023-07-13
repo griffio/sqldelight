@@ -1,0 +1,13 @@
+CREATE TYPE week_day AS ENUM('Mon', 'Tue', 'Wed', 'Thu', 'Fri');
+CREATE TYPE job_status AS ENUM('Pending', 'In Progress', 'Completed');
+
+CREATE TABLE some_enums(
+  some_day week_day NOT NULL,
+  some_status job_status DEFAULT 'Pending'
+);
+
+insertEnums:
+  INSERT INTO some_enums (some_day, some_status) VALUES (:some_day, :some_status);
+
+selectEnums:
+  SELECT some_day, some_status FROM some_enums;

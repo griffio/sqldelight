@@ -326,4 +326,11 @@ class PostgreSqlTest {
       ),
     )
   }
+
+  @Test fun createNewTypes() {
+    database.enumsQueries.insertEnums("Mon", "In Progress")
+    val enums = database.enumsQueries.selectEnums().executeAsOne()
+    assertThat(enums.some_day).isEqualTo("Mon")
+    assertThat(enums.some_status).isEqualTo("In Progress")
+  }
 }
