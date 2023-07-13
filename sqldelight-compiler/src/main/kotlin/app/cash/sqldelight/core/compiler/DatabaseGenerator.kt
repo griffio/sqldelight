@@ -335,6 +335,7 @@ internal class DatabaseGenerator(
   }
 
   private fun SqlStmt.isSchema() = when {
+    createTypeStmt != null -> true
     createIndexStmt != null -> true
     createTableStmt != null -> true
     createTriggerStmt != null -> true

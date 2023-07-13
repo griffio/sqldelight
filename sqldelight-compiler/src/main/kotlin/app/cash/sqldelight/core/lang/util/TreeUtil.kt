@@ -30,6 +30,7 @@ import com.alecstrong.sql.psi.core.psi.AliasElement
 import com.alecstrong.sql.psi.core.psi.SqlAnnotatedElement
 import com.alecstrong.sql.psi.core.psi.SqlColumnName
 import com.alecstrong.sql.psi.core.psi.SqlCreateTableStmt
+import com.alecstrong.sql.psi.core.psi.SqlCreateTypeStmt
 import com.alecstrong.sql.psi.core.psi.SqlCreateViewStmt
 import com.alecstrong.sql.psi.core.psi.SqlCreateVirtualTableStmt
 import com.alecstrong.sql.psi.core.psi.SqlExpr
@@ -213,6 +214,7 @@ fun Collection<SqlDelightQueriesFile>.forInitializationStatements(
   body: (sqlText: String) -> Unit,
 ) {
   val views = ArrayList<SqlCreateViewStmt>()
+  val types = ArrayList<SqlCreateTypeStmt>()
   val tables = ArrayList<SqlCreateTableStmt>()
   val creators = ArrayList<PsiElement>()
   val miscellanious = ArrayList<PsiElement>()
@@ -223,6 +225,7 @@ fun Collection<SqlDelightQueriesFile>.forInitializationStatements(
       .forEach { (_, sqlStatement) ->
         when {
           sqlStatement.createTableStmt != null -> tables.add(sqlStatement.createTableStmt!!)
+          sqlStatement.createTypeStmt != null -> types.add(sqlStatement.createTypeStmt!!)
           sqlStatement.createViewStmt != null -> views.add(sqlStatement.createViewStmt!!)
           sqlStatement.createTriggerStmt != null -> creators.add(sqlStatement.createTriggerStmt!!)
           sqlStatement.createIndexStmt != null -> creators.add(sqlStatement.createIndexStmt!!)
@@ -230,6 +233,8 @@ fun Collection<SqlDelightQueriesFile>.forInitializationStatements(
         }
       }
   }
+
+  types.forEach { body(it.rawSqlText()) }
 
   when (allowReferenceCycles) {
     // If we allow cycles, don't attempt to order the table creation statements. The dialect
