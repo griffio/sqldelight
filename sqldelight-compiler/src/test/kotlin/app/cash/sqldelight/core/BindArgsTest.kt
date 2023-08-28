@@ -386,5 +386,66 @@ class BindArgsTest {
     }
   }
 
+  @Test fun `delete order by limit clause can use bind parameter`() {
+    val file = FixtureCompiler.parseSql(
+      """
+      |CREATE TABLE test (
+      |  alpha TEXT NOT NULL,
+      |  beta REAL NOT NULL
+      |);
+      |
+      |deleteRows:
+      | DELETE FROM test
+      |   WHERE alpha < ?
+      |   ORDER BY beta ASC
+      |   LIMIT ?;
+      """.trimMargin(),
+      tempFolder,
+    )
+    file.findChildrenOfType<SqlBindExpr>().map { it.argumentType() }.let { args ->
+
+      assertThat(args[0].dialectType).isEqualTo(PrimitiveType.TEXT)
+      assertThat(args[0].javaType).isEqualTo(String::class.asClassName())
+      assertThat(args[0].name).isEqualTo("alpha")
+
+      assertThat(args[1].dialectType).isEqualTo(PrimitiveType.INTEGER)
+      assertThat(args[1].javaType).isEqualTo(Long::class.asClassName())
+      assertThat(args[1].name).isEqualTo("value")
+    }
+  }
+
+  @Test fun `update limit clause can use bind parameter`() {
+    val file = FixtureCompiler.parseSql(
+      """
+      |CREATE TABLE test (
+      |  alpha TEXT NOT NULL,
+      |  beta REAL NOT NULL
+      |);
+      |
+      |updateRows:
+      | UPDATE test
+      |  SET alpha = ?
+      |  WHERE beta < ?
+      |  LIMIT ?;
+      """.trimMargin(),
+      tempFolder,
+    )
+
+    file.findChildrenOfType<SqlBindExpr>().map { it.argumentType() }.let { args ->
+
+      assertThat(args[0].dialectType).isEqualTo(PrimitiveType.TEXT)
+      assertThat(args[0].javaType).isEqualTo(String::class.asClassName())
+      assertThat(args[0].name).isEqualTo("alpha")
+
+      assertThat(args[1].dialectType).isEqualTo(PrimitiveType.REAL)
+      assertThat(args[1].javaType).isEqualTo(Double::class.asClassName())
+      assertThat(args[1].name).isEqualTo("beta")
+
+      assertThat(args[2].dialectType).isEqualTo(PrimitiveType.INTEGER)
+      assertThat(args[2].javaType).isEqualTo(Long::class.asClassName())
+      assertThat(args[2].name).isEqualTo("value")
+    }
+  }
+
   private fun SqlBindExpr.argumentType() = typeResolver.argumentType(this)
 }
