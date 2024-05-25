@@ -928,4 +928,22 @@ class PostgreSqlTest {
       assertThat(expr_________).isEqualTo(OffsetDateTime.of(2001, 2, 17, 2, 38, 40, 0, ZoneOffset.ofHours(0)))
     }
   }
+
+  @Test
+  fun testExtract() {
+    val sa = OffsetDateTime.of(2001, 2, 16, 19, 30, 0, 0, ZoneOffset.ofHours(0))
+    val ea = OffsetDateTime.of(2001, 2, 16, 20, 30, 0, 0, ZoneOffset.ofHours(0))
+    val cd = LocalDate.of(2001, 2, 16)
+
+    database.extractQueries.insert(sa, ea, cd)
+
+    with(database.extractQueries.select().executeAsOne()) {
+      assertThat(expr).isEqualTo(5)
+      assertThat(expr_).isEqualTo(2023)
+      assertThat(expr__).isEqualTo(93600)
+      assertThat(expr___).isEqualTo(20)
+      assertThat(expr____).isEqualTo(38)
+      assertThat(expr_____).isEqualTo(16)
+    }
+  }
 }
