@@ -312,6 +312,9 @@ class PostgreSqlTypeResolver(private val parentResolver: TypeResolver) : TypeRes
       }
       extractTemporalExpression != null -> {
         val temporalExprType = (extractTemporalExpression as ExtractTemporalExpressionMixin).expr.postgreSqlType()
+        if (temporalExprType.dialectType !in temporalTypes) {
+          error("EXTRACT FROM requires a temporal type argument. The provided argument ${temporalExprType.dialectType} is not supported.")
+        }
         IntermediateType(REAL).nullableIf(temporalExprType.javaType.isNullable)
       }
       else -> parentResolver.resolvedType(this)
@@ -332,6 +335,14 @@ class PostgreSqlTypeResolver(private val parentResolver: TypeResolver) : TypeRes
       SqlTypes.GTE,
       SqlTypes.LT,
       SqlTypes.LTE,
+    )
+
+    private val temporalTypes = listOf(
+      DATE,
+      PostgreSqlType.INTERVAL,
+      PostgreSqlType.TIMESTAMP_TIMEZONE,
+      PostgreSqlType.TIMESTAMP,
+      PostgreSqlType.TIME,
     )
 
     private fun arrayIntermediateType(type: IntermediateType): IntermediateType {
