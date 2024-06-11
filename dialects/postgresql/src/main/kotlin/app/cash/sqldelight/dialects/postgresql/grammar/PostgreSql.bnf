@@ -169,8 +169,12 @@ bind_parameter ::= DEFAULT | ( '?' | ':' {identifier} ) {
   implements = "com.alecstrong.sql.psi.core.psi.SqlBindParameter"
   override = true
 }
+
+constraint_exclude_operators ::= '&&' | '='
+
 table_constraint ::= [ CONSTRAINT {identifier} ] (
   ( PRIMARY KEY | UNIQUE ) [{index_name}] LP {indexed_column} [ LP {signed_number} RP ] ( COMMA {indexed_column} [ LP {signed_number} RP ] ) * RP {conflict_clause} [comment_type] |
+  'EXCLUDE' USING index_method LP <<expr '-1'>> WITH constraint_exclude_operators ( COMMA <<expr '-1'>> WITH constraint_exclude_operators ) * RP [ WHERE LP <<expr '-1'>> RP ] |
   {check_constraint} |
   FOREIGN KEY LP {column_name} ( COMMA {column_name} ) * RP {foreign_key_clause}
 ) {
