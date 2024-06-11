@@ -975,4 +975,21 @@ class PostgreSqlTest {
       assertThat(expr).isEqualTo(60.0)
     }
   }
+
+  @Test
+  fun testSelectRangeFunction() {
+    database.tsRangesQueries.insert(
+      """("2010-01-01 14:30:00+00","2010-01-01 15:30:00"]""",
+      """["2010-01-01 14:30:00+00","2010-01-01 15:30:00+00")""",
+    )
+
+    with(database.tsRangesQueries.selectRangeFunction().executeAsOne()) {
+      assertThat(isempty).isFalse()
+      assertThat(lower_inc).isFalse()
+      assertThat(upper_inc).isTrue()
+      assertThat(lower_inf).isFalse()
+      assertThat(upper_inf).isFalse()
+      assertThat(range_merge).isEqualTo("""["2010-01-01 14:30:00+00","2010-01-01 15:30:00+00")""")
+    }
+  }
 }
