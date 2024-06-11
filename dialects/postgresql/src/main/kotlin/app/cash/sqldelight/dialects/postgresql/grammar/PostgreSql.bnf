@@ -155,7 +155,9 @@ type_name ::= (
   boolean_data_type |
   json_data_type |
   blob_data_type |
-  tsvector_data_type
+  tsvector_data_type |
+  tstzrange |
+  tsrange
 ) [ '[]' ] {
   extends = "com.alecstrong.sql.psi.core.psi.impl.SqlTypeNameImpl"
   implements = "com.alecstrong.sql.psi.core.psi.SqlTypeName"
@@ -231,6 +233,10 @@ timestamp_expression ::= 'TIMESTAMP' [ (WITH | WITHOUT) 'TIME' 'ZONE' ] {string_
 date_expression ::= 'DATE' {string_literal}
 
 time_expression ::= 'TIME' {string_literal}
+
+tsrange ::= 'TSRANGE'
+
+tstzrange ::= 'TSTZRANGE'
 
 with_clause_auxiliary_stmt ::= {compound_select_stmt} | delete_stmt_limited | insert_stmt | update_stmt_limited {
   extends = "com.alecstrong.sql.psi.core.psi.impl.SqlWithClauseAuxiliaryStmtImpl"
