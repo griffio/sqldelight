@@ -959,4 +959,20 @@ class PostgreSqlTest {
       assertThat(expr________).isEqualTo(3)
     }
   }
+
+  @Test
+  fun testSelectLowerUpper() {
+    database.tsRangesQueries.insert(
+      """("2010-01-01 14:30:00+00","2010-01-01 15:30:00"]""",
+      """["2010-01-01 14:30:00+00","2010-01-01 15:30:00+00")""",
+    )
+
+    with(database.tsRangesQueries.selectLowerUpper().executeAsOne()) {
+      assertThat(begin_ts).isEqualTo(LocalDateTime.of(2010, 1, 1, 14, 30, 0))
+      assertThat(end_ts).isEqualTo(LocalDateTime.of(2010, 1, 1, 15, 30, 0))
+      assertThat(begin_tsz).isEqualTo(OffsetDateTime.of(2010, 1, 1, 14, 30, 0, 0, ZoneOffset.ofHours(0)))
+      assertThat(end_tsz).isEqualTo(OffsetDateTime.of(2010, 1, 1, 15, 30, 0, 0, ZoneOffset.ofHours(0)))
+      assertThat(expr).isEqualTo(60.0)
+    }
+  }
 }
