@@ -15,4 +15,14 @@ CREATE TABLE Reservations (
     CONSTRAINT no_screening_time_overlap EXCLUDE USING GIST (finish_time WITH =, start_time WITH &&)
 );
 
+SELECT *
+FROM Reservations
+WHERE finish_time <@ start_time;
 
+SELECT finish_time @> start_time
+FROM Reservations;
+
+SELECT start_time && finish_time, start_time << finish_time, start_time >> finish_time,
+ start_time &> finish_time, start_time &< finish_time, start_time -|- finish_time,
+ start_time * finish_time, start_time + finish_time, start_time - finish_time
+FROM Reservations;
