@@ -279,6 +279,8 @@ class PostgreSqlTypeResolver(private val parentResolver: TypeResolver) : TypeRes
           PostgreSqlType.TIME,
           PostgreSqlType.JSON,
           PostgreSqlType.TSVECTOR,
+          PostgreSqlType.TSRANGE,
+          PostgreSqlType.TSTZRANGE,
         )
       }
     }
@@ -312,6 +314,9 @@ class PostgreSqlTypeResolver(private val parentResolver: TypeResolver) : TypeRes
         } else {
           IntermediateType(PostgreSqlType.JSON)
         }
+      }
+      rangeOperatorExpression != null -> {
+        IntermediateType(BOOLEAN)
       }
       matchOperatorExpression != null || regexMatchOperatorExpression != null || booleanNotExpression != null || containOperatorExpression != null -> {
         IntermediateType(BOOLEAN)

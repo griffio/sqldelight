@@ -468,6 +468,7 @@ contain_operator_expression ::= ( {function_expr} | {column_expr} ) contain_oper
 }
 
 range_operator_expression ::= ( {function_expr} | {column_expr} ) range_boolean_operator <<expr '-1'>> {
+  mixin = "app.cash.sqldelight.dialects.postgresql.grammar.mixins.RangeOperatorExpressionMixin"
   pin = 2
 }
 
