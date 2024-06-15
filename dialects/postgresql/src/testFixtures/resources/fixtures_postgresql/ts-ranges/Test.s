@@ -10,6 +10,7 @@ CREATE TABLE Schedules(
 );
 
 CREATE TABLE Reservations (
+    id INTEGER,
     start_time TSTZRANGE,
     finish_time TSTZRANGE,
     CONSTRAINT no_screening_time_overlap EXCLUDE USING GIST (finish_time WITH =, start_time WITH &&)
@@ -25,4 +26,8 @@ FROM Reservations;
 SELECT start_time && finish_time, start_time << finish_time, start_time >> finish_time,
  start_time &> finish_time, start_time &< finish_time, start_time -|- finish_time,
  start_time * finish_time, start_time + finish_time, start_time - finish_time
+FROM Reservations;
+
+--error[col 7]: expression must be JSONB, TSVECTOR, TSRANGE, TSTZRANGE.
+SELECT id @> start_time
 FROM Reservations;

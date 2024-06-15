@@ -18,3 +18,13 @@ SELECT isempty(slot_ts),
  lower_inf(slot_ts), upper_inf(slot_ts),
  range_merge(slot_tsz, slot_tsz)
 FROM TsRanges;
+
+selectRangeContains:
+SELECT slot_ts <@ slot_ts, slot_tsz @> slot_tsz
+FROM TsRanges;
+
+selectRangeOperators:
+SELECT slot_ts && slot_ts, slot_ts << slot_ts, slot_tsz >> slot_tsz,
+ slot_ts &> slot_ts, slot_tsz &< slot_tsz, slot_ts -|- slot_ts,
+ slot_ts * slot_ts, slot_ts + slot_ts, slot_tsz - slot_tsz
+FROM TsRanges;
