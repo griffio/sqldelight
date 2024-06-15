@@ -994,14 +994,27 @@ class PostgreSqlTest {
   }
 
   @Test
+  fun testSelectRangeContains() {
+    database.tsRangesQueries.insert(
+      """("2010-01-01 14:30:00+00","2010-01-01 15:30:00"]""",
+      """["2010-01-01 14:30:00+00","2010-01-01 15:30:00+00")""",
+    )
+    with(
+      database.tsRangesQueries.selectRangeContains().executeAsOne(),
+    ) {
+      assertThat(expr).isTrue()
+      assertThat(expr_).isTrue()
+    }
+  }
+
+  @Test
   fun testSelectRangeOperators() {
     database.tsRangesQueries.insert(
       """("2010-01-01 14:30:00+00","2010-01-01 15:30:00"]""",
       """["2010-01-01 14:30:00+00","2010-01-01 15:30:00+00")""",
     )
     with(
-      database.tsRangesQueries
-        .selectRangeOperators().executeAsOne(),
+      database.tsRangesQueries.selectRangeOperators().executeAsOne(),
     ) {
       assertThat(expr).isTrue()
       assertThat(expr_).isFalse()
