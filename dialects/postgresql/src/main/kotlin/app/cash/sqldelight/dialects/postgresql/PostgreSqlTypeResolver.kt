@@ -77,6 +77,8 @@ class PostgreSqlTypeResolver(private val parentResolver: TypeResolver) : TypeRes
         tsvectorDataType != null -> PostgreSqlType.TSVECTOR
         tsrange != null -> PostgreSqlType.TSRANGE
         tstzrange != null -> PostgreSqlType.TSTZRANGE
+        tsmultirange != null -> PostgreSqlType.TSMULTIRANGE
+        tstzmultirange != null -> PostgreSqlType.TSTZMULTIRANGE
         else -> throw IllegalArgumentException("Unknown kotlin type for sql type ${this.text}")
       },
     )
@@ -202,9 +204,18 @@ class PostgreSqlTypeResolver(private val parentResolver: TypeResolver) : TypeRes
     "ntile" -> IntermediateType(INTEGER).asNullable()
     "lag", "lead", "first_value", "last_value", "nth_value" -> encapsulatingTypePreferringKotlin(exprList, SMALL_INT, PostgreSqlType.INTEGER, INTEGER, BIG_INT, REAL, TEXT, TIMESTAMP_TIMEZONE, TIMESTAMP, DATE).asNullable()
     "isempty", "lower_inc", "upper_inc", "lower_inf", "upper_inf" -> IntermediateType(BOOLEAN)
-    "range_merge" -> encapsulatingTypePreferringKotlin(exprList, PostgreSqlType.TSRANGE, PostgreSqlType.TSTZRANGE)
+    "range_merge" -> encapsulatingTypePreferringKotlin(exprList, PostgreSqlType.TSRANGE, PostgreSqlType.TSTZRANGE, PostgreSqlType.TSMULTIRANGE, PostgreSqlType.TSTZRANGE)
     "tsrange" -> IntermediateType(PostgreSqlType.TSRANGE)
     "tstzrange" -> IntermediateType(PostgreSqlType.TSTZRANGE)
+    "tsmultirange" -> IntermediateType(PostgreSqlType.TSMULTIRANGE)
+    "tstzmultirange" -> IntermediateType(PostgreSqlType.TSTZMULTIRANGE)
+    "range_agg" -> {
+      when (resolvedType(exprList[0]).dialectType) {
+        PostgreSqlType.TSRANGE, PostgreSqlType.TSMULTIRANGE -> IntermediateType(PostgreSqlType.TSMULTIRANGE)
+        PostgreSqlType.TSTZRANGE, PostgreSqlType.TSTZMULTIRANGE -> IntermediateType(PostgreSqlType.TSTZMULTIRANGE)
+        else -> error("type not supported for range_agg, use TSRANGE, TSMULTIRANGE, TSTZRANGE, TSTZMULTIRANGE")
+      }
+    }
     else -> null
   }
 
@@ -283,6 +294,8 @@ class PostgreSqlTypeResolver(private val parentResolver: TypeResolver) : TypeRes
           PostgreSqlType.TSVECTOR,
           PostgreSqlType.TSRANGE,
           PostgreSqlType.TSTZRANGE,
+          PostgreSqlType.TSMULTIRANGE,
+          PostgreSqlType.TSTZMULTIRANGE,
         )
       }
     }

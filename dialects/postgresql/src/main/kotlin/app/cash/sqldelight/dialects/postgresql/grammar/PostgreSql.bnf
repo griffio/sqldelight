@@ -157,7 +157,9 @@ type_name ::= (
   blob_data_type |
   tsvector_data_type |
   tstzrange |
-  tsrange
+  tsrange |
+  tsmultirange |
+  tstzmultirange
 ) [ '[]' ] {
   extends = "com.alecstrong.sql.psi.core.psi.impl.SqlTypeNameImpl"
   implements = "com.alecstrong.sql.psi.core.psi.SqlTypeName"
@@ -241,6 +243,10 @@ time_expression ::= 'TIME' {string_literal}
 tsrange ::= 'TSRANGE'
 
 tstzrange ::= 'TSTZRANGE'
+
+tsmultirange ::= 'TSMULTIRANGE'
+
+tstzmultirange ::= 'TSTZMULTIRANGE'
 
 with_clause_auxiliary_stmt ::= {compound_select_stmt} | delete_stmt_limited | insert_stmt | update_stmt_limited {
   extends = "com.alecstrong.sql.psi.core.psi.impl.SqlWithClauseAuxiliaryStmtImpl"
