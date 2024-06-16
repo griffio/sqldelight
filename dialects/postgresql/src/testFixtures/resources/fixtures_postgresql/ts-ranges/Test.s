@@ -31,3 +31,7 @@ FROM Reservations;
 --error[col 7]: expression must be JSONB, TSVECTOR, TSRANGE, TSTZRANGE.
 SELECT id @> start_time
 FROM Reservations;
+
+SELECT tstzmultirange(tstzrange('2010-01-01 14:30:00', '2010-01-01 15:30:00', '[]')) - range_agg(start_time)
+FROM Reservations
+WHERE start_time && tstzrange('2010-01-01 14:30:00', '2010-01-01 15:30:00', '[]');
