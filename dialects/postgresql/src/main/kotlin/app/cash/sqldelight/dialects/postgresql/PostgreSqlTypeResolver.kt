@@ -292,7 +292,6 @@ class PostgreSqlTypeResolver(private val parentResolver: TypeResolver) : TypeRes
           REAL,
           TEXT,
           BLOB,
-          BOOLEAN,
           DATE,
           PostgreSqlType.UUID,
           PostgreSqlType.INTERVAL,
@@ -305,6 +304,7 @@ class PostgreSqlTypeResolver(private val parentResolver: TypeResolver) : TypeRes
           PostgreSqlType.TSTZRANGE,
           PostgreSqlType.TSMULTIRANGE,
           PostgreSqlType.TSTZMULTIRANGE,
+          BOOLEAN,
         )
       }
     }
