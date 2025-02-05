@@ -250,6 +250,11 @@ open class PostgreSqlTypeResolver(private val parentResolver: TypeResolver) : Ty
     }
   }
 
+  // dialects or modules would need to extend this if they add types that use operators in binaryExprChildTypesResolvingToBool
+  protected open fun booleanBinaryExprTypes(): Array<DialectType> {
+    return booleanBinaryExprTypes
+  }
+
   private fun SqlExpr.postgreSqlType(): IntermediateType = when (this) {
     is SqlIsExpr -> IntermediateType(BOOLEAN)
     is SqlBinaryExpr -> {
@@ -262,23 +267,7 @@ open class PostgreSqlTypeResolver(private val parentResolver: TypeResolver) : Ty
             (this is SqlBinaryAddExpr || this is SqlBinaryMultExpr || this is SqlBinaryPipeExpr) &&
               exprListNullability.any { it }
           },
-          SMALL_INT,
-          PostgreSqlType.INTEGER,
-          INTEGER,
-          BIG_INT,
-          REAL,
-          PostgreSqlType.NUMERIC,
-          TEXT,
-          BLOB,
-          BOOLEAN,
-          DATE,
-          PostgreSqlType.UUID,
-          PostgreSqlType.INTERVAL,
-          PostgreSqlType.TIMESTAMP_TIMEZONE,
-          PostgreSqlType.TIMESTAMP,
-          PostgreSqlType.TIME,
-          PostgreSqlType.JSON,
-          PostgreSqlType.TSVECTOR,
+          typeOrder = booleanBinaryExprTypes(),
         )
       }
     }
@@ -343,6 +332,26 @@ open class PostgreSqlTypeResolver(private val parentResolver: TypeResolver) : Ty
   }
 
   companion object {
+
+    private val booleanBinaryExprTypes: Array<DialectType> = arrayOf(
+      SMALL_INT,
+      PostgreSqlType.INTEGER,
+      INTEGER,
+      BIG_INT,
+      REAL,
+      PostgreSqlType.NUMERIC,
+      TEXT,
+      BLOB,
+      DATE,
+      PostgreSqlType.UUID,
+      PostgreSqlType.INTERVAL,
+      PostgreSqlType.TIMESTAMP_TIMEZONE,
+      PostgreSqlType.TIMESTAMP,
+      PostgreSqlType.TIME,
+      PostgreSqlType.JSON,
+      PostgreSqlType.TSVECTOR,
+      BOOLEAN, // is last as expected that boolean expression resolve to boolean
+    )
     private val binaryExprChildTypesResolvingToBool = TokenSet.create(
       SqlTypes.EQ,
       SqlTypes.EQ2,
