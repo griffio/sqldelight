@@ -2,6 +2,8 @@ name: Test
 
 on:
   workflow_dispatch:
+    branches:
+      - test-docs
     # Ensure paths match paths-ignore in PR.yml
     paths:
       - 'docs/**'
