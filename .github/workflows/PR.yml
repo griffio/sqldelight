@@ -1,7 +1,7 @@
 name: Test
 
 on:
-  pull_request:
+  workflow_dispatch:
     # Ensure paths match paths-ignore in PR.yml
     paths:
       - 'docs/**'
