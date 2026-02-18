@@ -67,12 +67,12 @@ open class PostgreSqlTypeResolver(private val parentResolver: TypeResolver) : Ty
         serialDataType != null -> PostgreSqlType.INTEGER
         bigSerialDataType != null -> PostgreSqlType.BIG_INT
         dateDataType != null -> {
-          when (dateDataType!!.firstChild.text) {
-            "DATE" -> PostgreSqlType.DATE
-            "TIME" -> PostgreSqlType.TIME
-            "TIMESTAMP" -> if (dateDataType!!.node.getChildren(null).any { it.text == "WITH" }) TIMESTAMP_TIMEZONE else TIMESTAMP
-            "TIMESTAMPTZ" -> TIMESTAMP_TIMEZONE
-            "INTERVAL" -> PostgreSqlType.INTERVAL
+          when (dateDataType!!.firstChild.text.lowercase()) {
+            "date" -> PostgreSqlType.DATE
+            "time" -> PostgreSqlType.TIME
+            "timestamp" -> if (dateDataType!!.node.getChildren(null).any { it.text.lowercase() == "with" }) TIMESTAMP_TIMEZONE else TIMESTAMP
+            "timestamptz" -> TIMESTAMP_TIMEZONE
+            "interval" -> PostgreSqlType.INTERVAL
             else -> throw IllegalArgumentException("Unknown date type ${dateDataType!!.text}")
           }
         }
@@ -329,24 +329,27 @@ open class PostgreSqlTypeResolver(private val parentResolver: TypeResolver) : Ty
         )
       }
     }
-    is SqlLiteralExpr -> when {
-      literalValue.text == "TRUE" || literalValue.text == "FALSE" -> IntermediateType(BOOLEAN)
-      literalValue.text == "CURRENT_DATE" || literalValue.text.startsWith("DATE ") -> IntermediateType(PostgreSqlType.DATE)
-      literalValue.text == "CURRENT_TIME" || literalValue.text.startsWith("TIME ") -> IntermediateType(PostgreSqlType.TIME)
-      literalValue.text.startsWith("CURRENT_TIMESTAMP") -> IntermediateType(PostgreSqlType.TIMESTAMP_TIMEZONE)
-      literalValue.text.startsWith("TIMESTAMP WITH TIME ZONE") -> IntermediateType(PostgreSqlType.TIMESTAMP_TIMEZONE)
-      literalValue.text.startsWith("TIMESTAMP WITHOUT TIME ZONE") -> IntermediateType(TIMESTAMP)
-      literalValue.text.startsWith("TIMESTAMP") -> IntermediateType(TIMESTAMP)
-      literalValue.text.startsWith("INTERVAL") -> IntermediateType(PostgreSqlType.INTERVAL)
-      literalValue.text == "CURRENT_USER" || literalValue.text == "SESSION_USER" -> IntermediateType(TEXT)
-      literalValue.numericLiteral != null -> {
-        if (literalValue.text.contains('.')) {
-          IntermediateType(PostgreSqlType.NUMERIC)
-        } else {
-          IntermediateType(PostgreSqlType.INTEGER)
+    is SqlLiteralExpr -> {
+      val value = literalValue.text.lowercase()
+      when {
+        value == "true" || value == "false" -> IntermediateType(BOOLEAN)
+        value == "current_date" || value.startsWith("date ") -> IntermediateType(PostgreSqlType.DATE)
+        value == "current_time" || value.startsWith("time ") -> IntermediateType(PostgreSqlType.TIME)
+        value.startsWith("current_timestamp") -> IntermediateType(PostgreSqlType.TIMESTAMP_TIMEZONE)
+        value.startsWith("timestamp with time zone") -> IntermediateType(PostgreSqlType.TIMESTAMP_TIMEZONE)
+        value.startsWith("timestamp without time zone") -> IntermediateType(TIMESTAMP)
+        value.startsWith("timestamp") -> IntermediateType(TIMESTAMP)
+        value.startsWith("interval") -> IntermediateType(PostgreSqlType.INTERVAL)
+        value == "current_user" || value == "session_user" -> IntermediateType(TEXT)
+        literalValue.numericLiteral != null -> {
+          if (value.contains('.')) {
+            IntermediateType(PostgreSqlType.NUMERIC)
+          } else {
+            IntermediateType(PostgreSqlType.INTEGER)
+          }
         }
+        else -> parentResolver.resolvedType(this)
       }
-      else -> parentResolver.resolvedType(this)
     }
     is PostgreSqlAtTimeZoneOperator -> IntermediateType(TEXT)
     is PostgreSqlExtensionExpr -> when {
