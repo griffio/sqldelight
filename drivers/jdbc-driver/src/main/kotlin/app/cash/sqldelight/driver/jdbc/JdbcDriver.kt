@@ -8,6 +8,8 @@ import app.cash.sqldelight.db.QueryResult
 import app.cash.sqldelight.db.SqlCursor
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.db.SqlPreparedStatement
+import app.cash.sqldelight.db.TransactionIsolationLevel
+import app.cash.sqldelight.db.TransactionOptions
 import app.cash.sqldelight.driver.jdbc.ConnectionManager.Transaction
 import java.math.BigDecimal
 import java.sql.Connection
@@ -49,6 +51,17 @@ interface ConnectionManager {
 
   fun Connection.beginTransaction()
 
+  /**
+   * Begin a transaction configured with [options]. Implementations which cannot honour [options]
+   * should leave this default in place so that unsupported options fail loudly.
+   */
+  fun Connection.beginTransaction(options: TransactionOptions) {
+    if (options != TransactionOptions.Default) {
+      throw UnsupportedOperationException("This connection manager does not support transaction options.")
+    }
+    beginTransaction()
+  }
+
   fun Connection.endTransaction()
 
   fun Connection.rollbackTransaction()
@@ -87,12 +100,14 @@ abstract class JdbcDriver :
   override fun Connection.endTransaction() {
     commit()
     autoCommit = true
+    restorePreviousState()
     closeConnection(this)
   }
 
   override fun Connection.rollbackTransaction() {
     rollback()
     autoCommit = true
+    restorePreviousState()
     closeConnection(this)
   }
 
@@ -105,6 +120,34 @@ abstract class JdbcDriver :
     }
     autoCommit = false
   }
+
+  override fun Connection.beginTransaction(options: TransactionOptions) {
+    // Delegate so that subclasses which only override the no-options overload keep working.
+    if (options == TransactionOptions.Default) return beginTransaction()
+
+    check(autoCommit) {
+      """
+      Expected autoCommit to be true by default. For compatibility with SQLDelight make sure it is
+      set to true when returning a connection from [JdbcDriver.getConnection()]
+      """.trimIndent()
+    }
+    // Connections are frequently pooled, so remember what to put back once we are done with them.
+    previousStates.set(ConnectionState(transactionIsolation, isReadOnly))
+    options.isolationLevel?.let { transactionIsolation = it.toJdbcIsolationLevel() }
+    if (options.readOnly) isReadOnly = true
+    autoCommit = false
+  }
+
+  private fun Connection.restorePreviousState() {
+    val previous = previousStates.get() ?: return
+    previousStates.remove()
+    transactionIsolation = previous.isolationLevel
+    isReadOnly = previous.readOnly
+  }
+
+  private class ConnectionState(val isolationLevel: Int, val readOnly: Boolean)
+
+  private val previousStates = ThreadLocal<ConnectionState>()
 
   private val transactions = ThreadLocal<Transaction>()
 
@@ -164,20 +207,33 @@ abstract class JdbcDriver :
     }
   }
 
-  override fun newTransaction(): QueryResult<Transacter.Transaction> {
+  override fun newTransaction(): QueryResult<Transacter.Transaction> =
+    newTransaction(TransactionOptions.Default)
+
+  override fun newTransaction(options: TransactionOptions): QueryResult<Transacter.Transaction> {
     val enclosing = transaction
+    check(enclosing == null || options == TransactionOptions.Default) {
+      "Transaction options can only be given to the outermost transaction."
+    }
     val connection = enclosing?.connection ?: getConnection()
     val transaction = Transaction(enclosing, this, connection)
     this.transaction = transaction
 
     if (enclosing == null) {
-      connection.beginTransaction()
+      connection.beginTransaction(options)
     }
 
     return QueryResult.Value(transaction)
   }
 
   override fun currentTransaction(): Transacter.Transaction? = transaction
+}
+
+private fun TransactionIsolationLevel.toJdbcIsolationLevel(): Int = when (this) {
+  TransactionIsolationLevel.READ_UNCOMMITTED -> Connection.TRANSACTION_READ_UNCOMMITTED
+  TransactionIsolationLevel.READ_COMMITTED -> Connection.TRANSACTION_READ_COMMITTED
+  TransactionIsolationLevel.REPEATABLE_READ -> Connection.TRANSACTION_REPEATABLE_READ
+  TransactionIsolationLevel.SERIALIZABLE -> Connection.TRANSACTION_SERIALIZABLE
 }
 
 /**

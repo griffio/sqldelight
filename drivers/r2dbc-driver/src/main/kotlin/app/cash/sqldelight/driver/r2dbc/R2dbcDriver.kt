@@ -6,8 +6,13 @@ import app.cash.sqldelight.db.QueryResult
 import app.cash.sqldelight.db.SqlCursor
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.db.SqlPreparedStatement
+import app.cash.sqldelight.db.TransactionIsolationLevel
+import app.cash.sqldelight.db.TransactionOptions
 import io.r2dbc.spi.Connection
+import io.r2dbc.spi.IsolationLevel
+import io.r2dbc.spi.Option
 import io.r2dbc.spi.Statement
+import io.r2dbc.spi.TransactionDefinition
 import java.math.BigDecimal
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
@@ -75,13 +80,23 @@ class R2dbcDriver(
       transactions.set(value)
     }
 
-  override fun newTransaction(): QueryResult<Transacter.Transaction> = QueryResult.AsyncValue {
+  override fun newTransaction(): QueryResult<Transacter.Transaction> =
+    newTransaction(TransactionOptions.Default)
+
+  override fun newTransaction(options: TransactionOptions): QueryResult<Transacter.Transaction> = QueryResult.AsyncValue {
     val enclosing = transaction
+    check(enclosing == null || options == TransactionOptions.Default) {
+      "Transaction options can only be given to the outermost transaction."
+    }
     val transaction = Transaction(enclosing, connection)
     this.transaction = transaction
 
     if (enclosing == null) {
-      connection.beginTransaction().awaitFirstOrNull()
+      if (options == TransactionOptions.Default) {
+        connection.beginTransaction().awaitFirstOrNull()
+      } else {
+        connection.beginTransaction(options.asTransactionDefinition()).awaitFirstOrNull()
+      }
     }
 
     return@AsyncValue transaction
@@ -131,6 +146,22 @@ class R2dbcDriver(
       transaction = enclosingTransaction
     }
   }
+}
+
+private fun TransactionOptions.asTransactionDefinition() = object : TransactionDefinition {
+  @Suppress("UNCHECKED_CAST")
+  override fun <T : Any?> getAttribute(option: Option<T>): T? = when (option) {
+    TransactionDefinition.ISOLATION_LEVEL -> isolationLevel?.asR2dbcIsolationLevel()
+    TransactionDefinition.READ_ONLY -> readOnly.takeIf { it }
+    else -> null
+  } as T?
+}
+
+private fun TransactionIsolationLevel.asR2dbcIsolationLevel(): IsolationLevel = when (this) {
+  TransactionIsolationLevel.READ_UNCOMMITTED -> IsolationLevel.READ_UNCOMMITTED
+  TransactionIsolationLevel.READ_COMMITTED -> IsolationLevel.READ_COMMITTED
+  TransactionIsolationLevel.REPEATABLE_READ -> IsolationLevel.REPEATABLE_READ
+  TransactionIsolationLevel.SERIALIZABLE -> IsolationLevel.SERIALIZABLE
 }
 
 /**

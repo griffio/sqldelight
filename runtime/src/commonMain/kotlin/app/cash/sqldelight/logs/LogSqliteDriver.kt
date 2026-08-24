@@ -21,6 +21,7 @@ import app.cash.sqldelight.db.QueryResult
 import app.cash.sqldelight.db.SqlCursor
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.db.SqlPreparedStatement
+import app.cash.sqldelight.db.TransactionOptions
 
 class LogSqliteDriver(
   private val sqlDriver: SqlDriver,
@@ -54,9 +55,12 @@ class LogSqliteDriver(
     return sqlDriver.executeQuery(identifier, sql, mapper, parameters, binders)
   }
 
-  override fun newTransaction(): QueryResult<Transacter.Transaction> {
+  override fun newTransaction(): QueryResult<Transacter.Transaction> =
+    newTransaction(TransactionOptions.Default)
+
+  override fun newTransaction(options: TransactionOptions): QueryResult<Transacter.Transaction> {
     logger("TRANSACTION BEGIN")
-    when (val queryResult = sqlDriver.newTransaction()) {
+    when (val queryResult = sqlDriver.newTransaction(options)) {
       is QueryResult.AsyncValue<Transacter.Transaction> -> {
         return QueryResult.AsyncValue {
           queryResult.await().also { it.attachLogHooks() }

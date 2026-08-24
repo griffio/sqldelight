@@ -1,5 +1,6 @@
 public abstract interface class app/cash/sqldelight/driver/jdbc/ConnectionManager {
 	public abstract fun beginTransaction (Ljava/sql/Connection;)V
+	public abstract fun beginTransaction (Ljava/sql/Connection;Lapp/cash/sqldelight/db/TransactionOptions;)V
 	public abstract fun close ()V
 	public abstract fun closeConnection (Ljava/sql/Connection;)V
 	public abstract fun endTransaction (Ljava/sql/Connection;)V
@@ -7,6 +8,10 @@ public abstract interface class app/cash/sqldelight/driver/jdbc/ConnectionManage
 	public abstract fun getTransaction ()Lapp/cash/sqldelight/driver/jdbc/ConnectionManager$Transaction;
 	public abstract fun rollbackTransaction (Ljava/sql/Connection;)V
 	public abstract fun setTransaction (Lapp/cash/sqldelight/driver/jdbc/ConnectionManager$Transaction;)V
+}
+
+public final class app/cash/sqldelight/driver/jdbc/ConnectionManager$DefaultImpls {
+	public static fun beginTransaction (Lapp/cash/sqldelight/driver/jdbc/ConnectionManager;Ljava/sql/Connection;Lapp/cash/sqldelight/db/TransactionOptions;)V
 }
 
 public final class app/cash/sqldelight/driver/jdbc/ConnectionManager$Transaction : app/cash/sqldelight/Transacter$Transaction {
@@ -39,6 +44,7 @@ public final class app/cash/sqldelight/driver/jdbc/JdbcCursor : app/cash/sqldeli
 public abstract class app/cash/sqldelight/driver/jdbc/JdbcDriver : app/cash/sqldelight/db/SqlDriver, app/cash/sqldelight/driver/jdbc/ConnectionManager {
 	public fun <init> ()V
 	public fun beginTransaction (Ljava/sql/Connection;)V
+	public fun beginTransaction (Ljava/sql/Connection;Lapp/cash/sqldelight/db/TransactionOptions;)V
 	public fun close ()V
 	public final fun connectionAndClose ()Lkotlin/Pair;
 	public fun currentTransaction ()Lapp/cash/sqldelight/Transacter$Transaction;
@@ -47,6 +53,7 @@ public abstract class app/cash/sqldelight/driver/jdbc/JdbcDriver : app/cash/sqld
 	public fun executeQuery (Ljava/lang/Integer;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILkotlin/jvm/functions/Function1;)Lapp/cash/sqldelight/db/QueryResult;
 	public fun getTransaction ()Lapp/cash/sqldelight/driver/jdbc/ConnectionManager$Transaction;
 	public fun newTransaction ()Lapp/cash/sqldelight/db/QueryResult;
+	public fun newTransaction (Lapp/cash/sqldelight/db/TransactionOptions;)Lapp/cash/sqldelight/db/QueryResult;
 	public fun rollbackTransaction (Ljava/sql/Connection;)V
 	public fun setTransaction (Lapp/cash/sqldelight/driver/jdbc/ConnectionManager$Transaction;)V
 }

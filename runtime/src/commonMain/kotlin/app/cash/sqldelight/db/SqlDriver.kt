@@ -75,6 +75,19 @@ interface SqlDriver : Closeable {
   fun newTransaction(): QueryResult<Transacter.Transaction>
 
   /**
+   * Start a new [Transacter.Transaction] on the database, configured with [options].
+   *
+   * Drivers which cannot honour [options] must throw rather than silently ignore them, which is
+   * what the default implementation does for anything but [TransactionOptions.Default].
+   */
+  fun newTransaction(options: TransactionOptions): QueryResult<Transacter.Transaction> {
+    if (options != TransactionOptions.Default) {
+      throw UnsupportedOperationException("This driver does not support transaction options.")
+    }
+    return newTransaction()
+  }
+
+  /**
    * The currently open [Transacter.Transaction] on the database.
    *
    * It's up to the implementor how this method behaves for different connection/threading patterns.

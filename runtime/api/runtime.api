@@ -46,12 +46,18 @@ public final class app/cash/sqldelight/QueryKt {
 }
 
 public abstract interface class app/cash/sqldelight/SuspendingTransacter : app/cash/sqldelight/TransacterBase {
+	public abstract fun transaction (Lapp/cash/sqldelight/db/TransactionOptions;ZLkotlin/jvm/functions/Function2;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun transaction (ZLkotlin/jvm/functions/Function2;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun transactionWithResult (Lapp/cash/sqldelight/db/TransactionOptions;ZLkotlin/jvm/functions/Function2;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun transactionWithResult (ZLkotlin/jvm/functions/Function2;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class app/cash/sqldelight/SuspendingTransacter$DefaultImpls {
+	public static fun transaction (Lapp/cash/sqldelight/SuspendingTransacter;Lapp/cash/sqldelight/db/TransactionOptions;ZLkotlin/jvm/functions/Function2;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun transaction$default (Lapp/cash/sqldelight/SuspendingTransacter;Lapp/cash/sqldelight/db/TransactionOptions;ZLkotlin/jvm/functions/Function2;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public static synthetic fun transaction$default (Lapp/cash/sqldelight/SuspendingTransacter;ZLkotlin/jvm/functions/Function2;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public static fun transactionWithResult (Lapp/cash/sqldelight/SuspendingTransacter;Lapp/cash/sqldelight/db/TransactionOptions;ZLkotlin/jvm/functions/Function2;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun transactionWithResult$default (Lapp/cash/sqldelight/SuspendingTransacter;Lapp/cash/sqldelight/db/TransactionOptions;ZLkotlin/jvm/functions/Function2;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public static synthetic fun transactionWithResult$default (Lapp/cash/sqldelight/SuspendingTransacter;ZLkotlin/jvm/functions/Function2;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 }
 
@@ -61,7 +67,9 @@ public abstract interface class app/cash/sqldelight/SuspendingTransacter$Transac
 
 public abstract class app/cash/sqldelight/SuspendingTransacterImpl : app/cash/sqldelight/BaseTransacterImpl, app/cash/sqldelight/SuspendingTransacter {
 	public fun <init> (Lapp/cash/sqldelight/db/SqlDriver;)V
+	public fun transaction (Lapp/cash/sqldelight/db/TransactionOptions;ZLkotlin/jvm/functions/Function2;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun transaction (ZLkotlin/jvm/functions/Function2;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun transactionWithResult (Lapp/cash/sqldelight/db/TransactionOptions;ZLkotlin/jvm/functions/Function2;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun transactionWithResult (ZLkotlin/jvm/functions/Function2;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
@@ -76,12 +84,18 @@ public abstract interface class app/cash/sqldelight/SuspendingTransactionWithout
 }
 
 public abstract interface class app/cash/sqldelight/Transacter : app/cash/sqldelight/TransacterBase {
+	public abstract fun transaction (Lapp/cash/sqldelight/db/TransactionOptions;ZLkotlin/jvm/functions/Function1;)V
 	public abstract fun transaction (ZLkotlin/jvm/functions/Function1;)V
+	public abstract fun transactionWithResult (Lapp/cash/sqldelight/db/TransactionOptions;ZLkotlin/jvm/functions/Function1;)Ljava/lang/Object;
 	public abstract fun transactionWithResult (ZLkotlin/jvm/functions/Function1;)Ljava/lang/Object;
 }
 
 public final class app/cash/sqldelight/Transacter$DefaultImpls {
+	public static fun transaction (Lapp/cash/sqldelight/Transacter;Lapp/cash/sqldelight/db/TransactionOptions;ZLkotlin/jvm/functions/Function1;)V
+	public static synthetic fun transaction$default (Lapp/cash/sqldelight/Transacter;Lapp/cash/sqldelight/db/TransactionOptions;ZLkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
 	public static synthetic fun transaction$default (Lapp/cash/sqldelight/Transacter;ZLkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+	public static fun transactionWithResult (Lapp/cash/sqldelight/Transacter;Lapp/cash/sqldelight/db/TransactionOptions;ZLkotlin/jvm/functions/Function1;)Ljava/lang/Object;
+	public static synthetic fun transactionWithResult$default (Lapp/cash/sqldelight/Transacter;Lapp/cash/sqldelight/db/TransactionOptions;ZLkotlin/jvm/functions/Function1;ILjava/lang/Object;)Ljava/lang/Object;
 	public static synthetic fun transactionWithResult$default (Lapp/cash/sqldelight/Transacter;ZLkotlin/jvm/functions/Function1;ILjava/lang/Object;)Ljava/lang/Object;
 }
 
@@ -98,7 +112,9 @@ public abstract interface class app/cash/sqldelight/TransacterBase {
 
 public abstract class app/cash/sqldelight/TransacterImpl : app/cash/sqldelight/BaseTransacterImpl, app/cash/sqldelight/Transacter {
 	public fun <init> (Lapp/cash/sqldelight/db/SqlDriver;)V
+	public fun transaction (Lapp/cash/sqldelight/db/TransactionOptions;ZLkotlin/jvm/functions/Function1;)V
 	public fun transaction (ZLkotlin/jvm/functions/Function1;)V
+	public fun transactionWithResult (Lapp/cash/sqldelight/db/TransactionOptions;ZLkotlin/jvm/functions/Function1;)Ljava/lang/Object;
 	public fun transactionWithResult (ZLkotlin/jvm/functions/Function1;)Ljava/lang/Object;
 }
 
@@ -194,6 +210,7 @@ public abstract interface class app/cash/sqldelight/db/SqlDriver : java/io/Close
 	public abstract fun execute (Ljava/lang/Integer;Ljava/lang/String;ILkotlin/jvm/functions/Function1;)Lapp/cash/sqldelight/db/QueryResult;
 	public abstract fun executeQuery (Ljava/lang/Integer;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILkotlin/jvm/functions/Function1;)Lapp/cash/sqldelight/db/QueryResult;
 	public abstract fun newTransaction ()Lapp/cash/sqldelight/db/QueryResult;
+	public abstract fun newTransaction (Lapp/cash/sqldelight/db/TransactionOptions;)Lapp/cash/sqldelight/db/QueryResult;
 	public abstract fun notifyListeners ([Ljava/lang/String;)V
 	public abstract fun removeListener ([Ljava/lang/String;Lapp/cash/sqldelight/Query$Listener;)V
 }
@@ -201,6 +218,7 @@ public abstract interface class app/cash/sqldelight/db/SqlDriver : java/io/Close
 public final class app/cash/sqldelight/db/SqlDriver$DefaultImpls {
 	public static synthetic fun execute$default (Lapp/cash/sqldelight/db/SqlDriver;Ljava/lang/Integer;Ljava/lang/String;ILkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lapp/cash/sqldelight/db/QueryResult;
 	public static synthetic fun executeQuery$default (Lapp/cash/sqldelight/db/SqlDriver;Ljava/lang/Integer;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lapp/cash/sqldelight/db/QueryResult;
+	public static fun newTransaction (Lapp/cash/sqldelight/db/SqlDriver;Lapp/cash/sqldelight/db/TransactionOptions;)Lapp/cash/sqldelight/db/QueryResult;
 }
 
 public abstract interface class app/cash/sqldelight/db/SqlPreparedStatement {
@@ -217,6 +235,36 @@ public abstract interface class app/cash/sqldelight/db/SqlSchema {
 	public abstract fun migrate (Lapp/cash/sqldelight/db/SqlDriver;JJ[Lapp/cash/sqldelight/db/AfterVersion;)Lapp/cash/sqldelight/db/QueryResult;
 }
 
+public final class app/cash/sqldelight/db/TransactionIsolationLevel : java/lang/Enum {
+	public static final field READ_COMMITTED Lapp/cash/sqldelight/db/TransactionIsolationLevel;
+	public static final field READ_UNCOMMITTED Lapp/cash/sqldelight/db/TransactionIsolationLevel;
+	public static final field REPEATABLE_READ Lapp/cash/sqldelight/db/TransactionIsolationLevel;
+	public static final field SERIALIZABLE Lapp/cash/sqldelight/db/TransactionIsolationLevel;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lapp/cash/sqldelight/db/TransactionIsolationLevel;
+	public static fun values ()[Lapp/cash/sqldelight/db/TransactionIsolationLevel;
+}
+
+public final class app/cash/sqldelight/db/TransactionOptions {
+	public static final field Companion Lapp/cash/sqldelight/db/TransactionOptions$Companion;
+	public fun <init> ()V
+	public fun <init> (Lapp/cash/sqldelight/db/TransactionIsolationLevel;Z)V
+	public synthetic fun <init> (Lapp/cash/sqldelight/db/TransactionIsolationLevel;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Lapp/cash/sqldelight/db/TransactionIsolationLevel;
+	public final fun component2 ()Z
+	public final fun copy (Lapp/cash/sqldelight/db/TransactionIsolationLevel;Z)Lapp/cash/sqldelight/db/TransactionOptions;
+	public static synthetic fun copy$default (Lapp/cash/sqldelight/db/TransactionOptions;Lapp/cash/sqldelight/db/TransactionIsolationLevel;ZILjava/lang/Object;)Lapp/cash/sqldelight/db/TransactionOptions;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getIsolationLevel ()Lapp/cash/sqldelight/db/TransactionIsolationLevel;
+	public final fun getReadOnly ()Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class app/cash/sqldelight/db/TransactionOptions$Companion {
+	public final fun getDefault ()Lapp/cash/sqldelight/db/TransactionOptions;
+}
+
 public final class app/cash/sqldelight/logs/LogSqliteDriver : app/cash/sqldelight/db/SqlDriver {
 	public fun <init> (Lapp/cash/sqldelight/db/SqlDriver;Lkotlin/jvm/functions/Function1;)V
 	public fun addListener ([Ljava/lang/String;Lapp/cash/sqldelight/Query$Listener;)V
@@ -225,6 +273,7 @@ public final class app/cash/sqldelight/logs/LogSqliteDriver : app/cash/sqldeligh
 	public fun execute (Ljava/lang/Integer;Ljava/lang/String;ILkotlin/jvm/functions/Function1;)Lapp/cash/sqldelight/db/QueryResult;
 	public fun executeQuery (Ljava/lang/Integer;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILkotlin/jvm/functions/Function1;)Lapp/cash/sqldelight/db/QueryResult;
 	public fun newTransaction ()Lapp/cash/sqldelight/db/QueryResult;
+	public fun newTransaction (Lapp/cash/sqldelight/db/TransactionOptions;)Lapp/cash/sqldelight/db/QueryResult;
 	public fun notifyListeners ([Ljava/lang/String;)V
 	public fun removeListener ([Ljava/lang/String;Lapp/cash/sqldelight/Query$Listener;)V
 }

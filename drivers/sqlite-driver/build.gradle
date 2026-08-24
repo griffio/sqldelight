@@ -16,6 +16,7 @@ dependencies {
   implementation libs.sqliteJdbc
 
   testImplementation projects.drivers.driverTest
+  testImplementation libs.kotlin.test.junit
 }
 
 apply from: "$rootDir/gradle/gradle-mvn-push.gradle"

@@ -18,6 +18,7 @@ package app.cash.sqldelight
 import app.cash.sqldelight.Transacter.Transaction
 import app.cash.sqldelight.db.QueryResult
 import app.cash.sqldelight.db.SqlDriver
+import app.cash.sqldelight.db.TransactionOptions
 import app.cash.sqldelight.internal.currentThreadId
 
 interface TransactionWithReturn<R> : TransactionCallbacks {
@@ -95,6 +96,32 @@ interface Transacter : TransacterBase {
     noEnclosing: Boolean = false,
     body: TransactionWithoutReturn.() -> Unit,
   )
+
+  /**
+   * Starts a [Transaction] configured with [options] and runs [bodyWithReturn] in that transaction.
+   *
+   * @throws UnsupportedOperationException if the underlying [SqlDriver] does not support [options].
+   * @throws IllegalStateException if there is already an active [Transaction] on this thread, since
+   *   [options] can only be applied to the outermost transaction.
+   */
+  fun <R> transactionWithResult(
+    options: TransactionOptions,
+    noEnclosing: Boolean = false,
+    bodyWithReturn: TransactionWithReturn<R>.() -> R,
+  ): R = throw UnsupportedOperationException("This transacter does not support transaction options.")
+
+  /**
+   * Starts a [Transaction] configured with [options] and runs [body] in that transaction.
+   *
+   * @throws UnsupportedOperationException if the underlying [SqlDriver] does not support [options].
+   * @throws IllegalStateException if there is already an active [Transaction] on this thread, since
+   *   [options] can only be applied to the outermost transaction.
+   */
+  fun transaction(
+    options: TransactionOptions,
+    noEnclosing: Boolean = false,
+    body: TransactionWithoutReturn.() -> Unit,
+  ): Unit = throw UnsupportedOperationException("This transacter does not support transaction options.")
 
   /**
    * A SQL transaction. Can be created through the driver via [SqlDriver.newTransaction] or
@@ -185,6 +212,24 @@ interface SuspendingTransacter : TransacterBase {
     noEnclosing: Boolean = false,
     body: suspend SuspendingTransactionWithoutReturn.() -> Unit,
   )
+
+  /**
+   * Starts a [Transaction] configured with [options] and runs [bodyWithReturn] in that transaction.
+   */
+  suspend fun <R> transactionWithResult(
+    options: TransactionOptions,
+    noEnclosing: Boolean = false,
+    bodyWithReturn: suspend SuspendingTransactionWithReturn<R>.() -> R,
+  ): R = throw UnsupportedOperationException("This transacter does not support transaction options.")
+
+  /**
+   * Starts a [Transaction] configured with [options] and runs [body] in that transaction.
+   */
+  suspend fun transaction(
+    options: TransactionOptions,
+    noEnclosing: Boolean = false,
+    body: suspend SuspendingTransactionWithoutReturn.() -> Unit,
+  ): Unit = throw UnsupportedOperationException("This transacter does not support transaction options.")
 
   /**
    * An interface that can be implemented by a [SqlDriver] to provide a specific coroutine context
@@ -362,18 +407,34 @@ abstract class TransacterImpl(driver: SqlDriver) :
     noEnclosing: Boolean,
     body: TransactionWithoutReturn.() -> Unit,
   ) {
-    transactionWithWrapper<Unit?>(noEnclosing, body)
+    transactionWithWrapper<Unit?>(TransactionOptions.Default, noEnclosing, body)
   }
 
   override fun <R> transactionWithResult(
     noEnclosing: Boolean,
     bodyWithReturn: TransactionWithReturn<R>.() -> R,
   ): R {
-    return transactionWithWrapper(noEnclosing, bodyWithReturn)
+    return transactionWithWrapper(TransactionOptions.Default, noEnclosing, bodyWithReturn)
   }
 
-  private fun <R> transactionWithWrapper(noEnclosing: Boolean, wrapperBody: TransactionWrapper<R>.() -> R): R {
-    val transaction = driver.newTransaction().value
+  override fun transaction(
+    options: TransactionOptions,
+    noEnclosing: Boolean,
+    body: TransactionWithoutReturn.() -> Unit,
+  ) {
+    transactionWithWrapper<Unit?>(options, noEnclosing, body)
+  }
+
+  override fun <R> transactionWithResult(
+    options: TransactionOptions,
+    noEnclosing: Boolean,
+    bodyWithReturn: TransactionWithReturn<R>.() -> R,
+  ): R {
+    return transactionWithWrapper(options, noEnclosing, bodyWithReturn)
+  }
+
+  private fun <R> transactionWithWrapper(options: TransactionOptions, noEnclosing: Boolean, wrapperBody: TransactionWrapper<R>.() -> R): R {
+    val transaction = driver.newTransaction(options).value
     val enclosing = transaction.enclosingTransaction()
 
     check(enclosing == null || !noEnclosing) { "Already in a transaction" }
@@ -400,31 +461,43 @@ abstract class SuspendingTransacterImpl(driver: SqlDriver) :
   override suspend fun <R> transactionWithResult(
     noEnclosing: Boolean,
     bodyWithReturn: suspend SuspendingTransactionWithReturn<R>.() -> R,
+  ): R = transactionWithResult(TransactionOptions.Default, noEnclosing, bodyWithReturn)
+
+  override suspend fun transaction(
+    noEnclosing: Boolean,
+    body: suspend SuspendingTransactionWithoutReturn.() -> Unit,
+  ) = transaction(TransactionOptions.Default, noEnclosing, body)
+
+  override suspend fun <R> transactionWithResult(
+    options: TransactionOptions,
+    noEnclosing: Boolean,
+    bodyWithReturn: suspend SuspendingTransactionWithReturn<R>.() -> R,
   ): R {
     return when (driver) {
       is SuspendingTransacter.TransactionDispatcher -> driver.dispatch {
-        transactionWithWrapper(noEnclosing, bodyWithReturn)
+        transactionWithWrapper(options, noEnclosing, bodyWithReturn)
       }
 
-      else -> transactionWithWrapper(noEnclosing, bodyWithReturn)
+      else -> transactionWithWrapper(options, noEnclosing, bodyWithReturn)
     }
   }
 
   override suspend fun transaction(
+    options: TransactionOptions,
     noEnclosing: Boolean,
     body: suspend SuspendingTransactionWithoutReturn.() -> Unit,
   ) {
     return when (driver) {
       is SuspendingTransacter.TransactionDispatcher -> driver.dispatch {
-        transactionWithWrapper(noEnclosing, body)
+        transactionWithWrapper(options, noEnclosing, body)
       }
 
-      else -> transactionWithWrapper(noEnclosing, body)
+      else -> transactionWithWrapper(options, noEnclosing, body)
     }
   }
 
-  private suspend fun <R> transactionWithWrapper(noEnclosing: Boolean, wrapperBody: suspend SuspendingTransactionWrapper<R>.() -> R): R {
-    val transaction = driver.newTransaction().await()
+  private suspend fun <R> transactionWithWrapper(options: TransactionOptions, noEnclosing: Boolean, wrapperBody: suspend SuspendingTransactionWrapper<R>.() -> R): R {
+    val transaction = driver.newTransaction(options).await()
     val enclosing = transaction.enclosingTransaction()
 
     check(enclosing == null || !noEnclosing) { "Already in a transaction" }
